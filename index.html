@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hey...</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #101827;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Opening screen */
+
+        #opening {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .envelope {
+            font-size: 75px;
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.5s ease;
+        }
+
+        .envelope:hover {
+            transform: scale(1.08);
+        }
+
+        .envelope.open {
+            transform: scale(1.3);
+            opacity: 0;
+        }
+
+        /* Conversation */
+
+        #conversation {
+            display: none;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+        }
+
+        .message-box {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .message {
+            font-size: 21px;
+            line-height: 1.8;
+            color: #eeeeee;
+
+            opacity: 0;
+            transform: translateY(15px);
+
+            animation: appear 0.8s ease forwards;
+        }
+
+        .hint {
+            margin-top: 35px;
+            font-size: 13px;
+            color: #777f8f;
+            opacity: 0;
+            animation: appear 0.8s ease 0.8s forwards;
+        }
+
+        /* Final choice */
+
+        #choice {
+            display: none;
+            margin-top: 35px;
+            opacity: 0;
+            animation: appear 0.8s ease forwards;
+        }
+
+        .choice-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #eeeeee;
+            margin-bottom: 25px;
+        }
+
+        .choice-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 25px;
+            background: #6574cd;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        button.no {
+            background: #454c59;
+        }
+
+        #response {
+            margin-top: 25px;
+            font-size: 16px;
+            line-height: 1.7;
+            color: #cfd4df;
+        }
+
+        /* Animations */
+
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-out {
+            animation: disappear 0.4s ease forwards;
+        }
+
+        @keyframes disappear {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Opening -->
+
+    <div id="opening">
+        <div class="envelope" onclick="openEnvelope()">✉️</div>
+    </div>
+
+
+    <!-- Conversation -->
+
+    <div id="conversation" onclick="nextMessage()">
+
+        <div class="message-box">
+
+            <div id="message" class="message">
+                Hey...<br>
+                It's been a really long time.
+            </div>
+
+            <div id="hint" class="hint">
+                tap anywhere to continue
+            </div>
+
+            <!-- Final choice -->
+
+            <div id="choice" onclick="event.stopPropagation()">
+
+                <div class="choice-text">
+                    That's all I wanted to say.<br>
+                    If you still want to talk to me...
+                </div>
+
+                <div class="choice-buttons">
+
+                    <button onclick="answer(true)">
+                        Yeah, let's eazy on.
+                    </button>
+
+                    <button class="no" onclick="answer(false)">
+                        I don't think so.
+                    </button>
+
+                </div>
+
+                <p id="response"></p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const opening = document.getElementById("opening");
+        const envelope = document.querySelector(".envelope");
+
+        const conversation = document.getElementById("conversation");
+
+        const message = document.getElementById("message");
+        const hint = document.getElementById("hint");
+
+        const choice = document.getElementById("choice");
+        const response = document.getElementById("response");
+
+        let currentMessage = 0;
+
+        const messages = [
+
+            `Hey...<br>
+            It's been a really long time.`,
+
+            `I don't even know if saying "hi" after all this time is weird.`,
+
+            `But...<br>
+            Hi.<br>
+            How have you been?`,
+
+            `Honestly... I didn't really know what to say here.<br>
+            Even now, I don't know if you want to talk or not.`,
+
+            `I just wanna let you know that I'm here, anytime.<br>
+            And I'm sorry for making you block me.<br>
+            I know I did a lot of annoying things.`,
+
+            `The main thing I want to say is... I'm sorry.<br><br>
+            If I only have one chance to prove myself.<br>
+            For now, I'll stop here.`
+        ];
+
+
+        function openEnvelope() {
+
+            envelope.classList.add("open");
+
+            setTimeout(() => {
+
+                opening.style.display = "none";
+
+                conversation.style.display = "flex";
+
+            }, 500);
+        }
+
+
+        function nextMessage() {
+
+            if (currentMessage >= messages.length - 1) {
+
+                showChoice();
+
+                return;
+            }
+
+            message.classList.remove("message");
+            message.classList.add("fade-out");
+
+            hint.style.opacity = "0";
+
+            setTimeout(() => {
+
+                currentMessage++;
+
+                message.innerHTML = messages[currentMessage];
+
+                message.classList.remove("fade-out");
+
+                void message.offsetWidth;
+
+                message.classList.add("message");
+
+                hint.style.opacity = "1";
+
+            }, 400);
+        }
+
+
+        function showChoice() {
+
+            hint.style.display = "none";
+
+            message.style.display = "none";
+
+            choice.style.display = "block";
+        }
+
+
+        async function answer(yes) {
+
+            document.querySelectorAll("#choice button").forEach(button => {
+                button.disabled = true;
+                button.style.opacity = "0.5";
+            });
+
+            const answerText = yes
+                ? "❤️ Yeah, let's talk."
+                : "💔 I don't think so.";
+
+            response.innerHTML = "Sending...";
+
+            try {
+
+                await fetch("https://discord.com/api/webhooks/1557442572836667422/u2APkBhDU3T_rC3inE6V-jf0ULeVfvfkYAshJ5LX4Nl1Vn94gsSXZ8pYXZN0RzjJ09Nj", {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        username: "Read My Heart",
+                        content: `New response:\n${answerText}`
+                    })
+                });
+
+                if (yes) {
+
+                    response.innerHTML =
+                        "Okay... thank you.<br>" +
+                        "I'd really like that.";
+
+                } else {
+
+                    response.innerHTML =
+                        "I understand.<br>" +
+                        "Thank you for reading everything.";
+
+                }
+
+            } catch (error) {
+
+                response.innerHTML =
+                    "Something went wrong. Please try again.";
+
+                document.querySelectorAll("#choice button").forEach(button => {
+                    button.disabled = false;
+                    button.style.opacity = "1";
+                });
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
